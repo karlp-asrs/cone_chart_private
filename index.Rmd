@@ -1,0 +1,42 @@
+---
+title: "Cone chart for private market"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE }
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+
+Cone charts tell if an investment is falling within expected performance and tracking error paramaeters.  This is straight forward for investments with time weighted returns.  The center line of the cone is the expected  excess performance and the edges are plus or minus one and two standard deviation tracking errors growing at the square root of time.  You then plot the realized cumulative outperformance.  The calculations can be accomplished entirely with return data and are independent of scale.
+
+With private market investments you have the dilemma that the investment amount varies in the discretion of the investment manager.  Thus the timing and scale investments become important determinants of outcome and need to be considered in evaluating the success of the investment.  IRR and PME methods are state of the art for performance evaluation in this context.
+
+How do you a do a cone chart in this context?  One way that we think works is to operate in dollar value add space.  You calculate the dollar value add of the investment compared to a benchmark.  The centerline of the cone is the dollar value add you would have had if the investment generated the excess return anticipated.  The edges of the cone are the dollar value add with excess plus or minus one or two standard deviation tracking error with the tracking error growing at the square root of time.
+
+Here is an example.
+
+```{r}
+# generate 20 years of investment cash flows
+# randomly selected from -1 to -5 for first 5 periods
+# then -3 to +2 thereafter
+cf=c(sample(-1:-5,5,replace=TRUE),sample(-3:2,15,replace=TRUE))
+
+#let's say the investment benchmark has expected mean of 8% and SD of 12%
+bench=rnorm(20,.08,.12)
+
+#the investment makes excess return of 3% with 1.5% tracking error
+inv_twr=bench+rnorm(20,.03,.015)
+
+#now calculate end of period NAVs
+#n.b. cash flows are treated as beginning of period
+
+fvmat=matrix(rev(bench),ncol=20,nrow=20)
+fvmat=1+fvmat*apply(diag(20),1,cumsum)
+fvmat=(apply(fvmat,2,cumprod))
+
+```
+
+
